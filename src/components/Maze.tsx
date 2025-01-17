@@ -78,6 +78,10 @@ const Maze: React.FC = () => {
     };
   }, [movePlayer, showQuestions]);
 
+  const handleQuestionAnswer = (answer: string | boolean) => {
+    handleAnswer(answer); // Pass both string and boolean answers to the game state logic
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#2A2A2A] px-4">
       <div className="relative">
@@ -103,7 +107,7 @@ const Maze: React.FC = () => {
         <Heart position={heartPosition} opacity={heartOpacity} />
 
         {showQuestions && (
-          <QuestionCard currentQuestion={currentQuestion} onAnswer={handleAnswer} />
+          <QuestionCard currentQuestion={currentQuestion} onAnswer={handleQuestionAnswer} />
         )}
 
         {gameCompleted && confetti && (

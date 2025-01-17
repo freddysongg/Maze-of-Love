@@ -50,7 +50,7 @@ export const useGameState = (mazeLayout: string[]) => {
 
   const handleAnswer = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (_answer: boolean) => {
+    (_answer: boolean | string) => {
       if (currentQuestion < 2) {
         setCurrentQuestion((q) => q + 1);
       } else {

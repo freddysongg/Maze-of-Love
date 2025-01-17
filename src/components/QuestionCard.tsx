@@ -1,38 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface QuestionCardProps {
   currentQuestion: number;
-  onAnswer: (answer: boolean) => void;
+  onAnswer: (answer: boolean | string) => void;
 }
 
 const questions = [
   {
+    question: 'What is your name (for security credentials)?',
+    response: (name: string) => `Hi ${name}, you're all set! Next question!`,
+    type: 'input' 
+  },
+  {
     question: 'Hi babe, are you doing anything on Feb 14?',
     noResponse: 'Yay!! Next question!',
-    yesResponse: "I don't care that you're not free, you're stuck with me... Next question!"
+    yesResponse: "I don't care that you're not free, you're stuck with me... Next question!",
+    type: 'button' 
   },
   {
     question: 'Do you like cute dinos?',
     yesResponse: 'Great choice! Next question!',
-    noResponse: "Even if you don't, this corgi loves you. Next question!"
+    noResponse: "Even if you don't, this corgi loves you. Next question!",
+    type: 'button' 
   },
   {
     question: 'Can I be your Valentine?',
     yesResponse: "Yay! You're my Valentine!",
-    noResponse: "I don't care, you're still my Valentine!"
+    noResponse: "I don't care, you're still my Valentine!",
+    type: 'button' 
   }
 ];
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }) => {
-  const [response, setResponse] = React.useState<string | null>(null);
+  const [response, setResponse] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState<string>(''); 
   const question = questions[currentQuestion];
 
-  const handleAnswer = (answer: boolean) => {
-    setResponse(answer ? question.yesResponse : question.noResponse);
+  const handleAnswer = (answer: boolean | string) => {
+    if (question.type === 'input' && typeof answer === 'string') {
+      const customResponse = question.response ? question.response(answer) : 'Thanks for your answer!';
+      setResponse(customResponse);
+    } else if (question.type === 'button' && typeof answer === 'boolean') {
+      setResponse(answer ? question.yesResponse ?? '' : question.noResponse ?? '');
+    } else {
+      setResponse(null);
+    }
+
     setTimeout(() => {
       setResponse(null);
       onAnswer(answer);
-    }, 5000);
+      setInputValue(''); 
+    }, 3000);
   };
 
   return (
@@ -57,28 +75,50 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
             <h2 className="text-2xl font-pixel mb-6 text-white text-center px-4">
               {question.question}
             </h2>
-            <div className="space-x-4 text-center">
-              <button
-                onClick={() => handleAnswer(true)}
-                className="px-6 py-2 bg-pink-500 text-white font-pixel rounded hover:bg-pink-600 transition-colors"
-                style={{
-                  border: '3px solid #2a2a2a',
-                  boxShadow: '3px 3px 0 #2a2a2a'
-                }}
-              >
-                Yes
-              </button>
-              <button
-                onClick={() => handleAnswer(false)}
-                className="px-6 py-2 bg-gray-500 text-white font-pixel rounded hover:bg-gray-600 transition-colors"
-                style={{
-                  border: '3px solid #2a2a2a',
-                  boxShadow: '3px 3px 0 #2a2a2a'
-                }}
-              >
-                No
-              </button>
-            </div>
+            {question.type === 'button' ? (
+              <div className="space-x-4 text-center">
+                <button
+                  onClick={() => handleAnswer(true)}
+                  className="px-6 py-2 bg-pink-500 text-white font-pixel rounded hover:bg-pink-600 transition-colors"
+                  style={{
+                    border: '3px solid #2a2a2a',
+                    boxShadow: '3px 3px 0 #2a2a2a'
+                  }}
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => handleAnswer(false)}
+                  className="px-6 py-2 bg-gray-500 text-white font-pixel rounded hover:bg-gray-600 transition-colors"
+                  style={{
+                    border: '3px solid #2a2a2a',
+                    boxShadow: '3px 3px 0 #2a2a2a'
+                  }}
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <div className="text-center">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  className="px-4 py-2 w-full bg-gray-800 text-white font-pixel rounded border-2 border-pink-500"
+                  placeholder="Type your answer here..."
+                />
+                <button
+                  onClick={() => handleAnswer(inputValue)}
+                  className="mt-4 px-6 py-2 bg-pink-500 text-white font-pixel rounded hover:bg-pink-600 transition-colors"
+                  style={{
+                    border: '3px solid #2a2a2a',
+                    boxShadow: '3px 3px 0 #2a2a2a'
+                  }}
+                >
+                  Submit
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
