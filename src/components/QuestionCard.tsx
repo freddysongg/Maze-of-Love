@@ -3,45 +3,72 @@ import React, { useState } from 'react';
 interface QuestionCardProps {
   currentQuestion: number;
   onAnswer: (answer: boolean | string) => void;
+  resetGame: () => void;
 }
 
 const questions = [
   {
-    question: 'What is your name (for security credentials)?',
-    response: (name: string) => `Hi ${name}, you're all set! Next question!`,
-    type: 'input' 
+    question: 'what is your name (for security reasons)?',
+    response: (name: string) => (name.toLowerCase() === 'tam' ? 'hi babe :)' : 'get out. goodbye!'),
+    type: 'input'
   },
   {
-    question: 'Hi babe, are you doing anything on Feb 14?',
-    noResponse: 'Yay!! Next question!',
-    yesResponse: "I don't care that you're not free, you're stuck with me... Next question!",
-    type: 'button' 
+    question:
+      "ok it might be you, but enter my birthday to make sure you're not an imposter (using format: MM/DD/YYYY)",
+    response: (date: string) =>
+      date === '02/18/2004'
+        ? 'good job, i knew it was you but if you forgot my birthday i was gonna body slam you..'
+        : "wow you're fake, you might've forgot my birthday but i still love you.",
+    type: 'input'
   },
   {
-    question: 'Do you like cute dinos?',
-    yesResponse: 'Great choice! Next question!',
-    noResponse: "Even if you don't, this corgi loves you. Next question!",
-    type: 'button' 
+    question: 'do you love me.',
+    yesResponse: 'yea you really had no choice nice try though.',
+    noResponse: 'yea you really had no choice nice try though.',
+    type: 'button'
   },
   {
-    question: 'Can I be your Valentine?',
-    yesResponse: "Yay! You're my Valentine!",
-    noResponse: "I don't care, you're still my Valentine!",
-    type: 'button' 
+    question: 'are you free on feb 14? (you better be)',
+    yesResponse: "you mean you're busy on feb 14 because you have a date with me, yea i know.",
+    noResponse: "yea you shouldn't be free because you have a date with me, duh.",
+    type: 'button'
+  },
+  {
+    question:
+      "well do you know why i made this game? i'll give you like 3 seconds to think about it.",
+    yesResponse: 'ok, and why did i make it??',
+    noResponse: "come on babe...you're dating a comsci guy what do you expect.",
+    type: 'button'
+  },
+  {
+    question: 'CAN YOU BE MY VALENTINE PLEASEEEEE',
+    yesResponse: "LET'S GOOOOOOOOOOOOOO!",
+    noResponse: "LET'S GOOOOOOOOOOOOOO!",
+    type: 'button'
   }
 ];
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }) => {
+const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer, resetGame }) => {
   const [response, setResponse] = useState<string | null>(null);
-  const [inputValue, setInputValue] = useState<string>(''); 
+  const [inputValue, setInputValue] = useState<string>('');
   const question = questions[currentQuestion];
 
   const handleAnswer = (answer: boolean | string) => {
     if (question.type === 'input' && typeof answer === 'string') {
-      const customResponse = question.response ? question.response(answer) : 'Thanks for your answer!';
+      const customResponse = question.response
+        ? question.response(answer)
+        : 'thanks for your answer!';
+
+      if (currentQuestion === 0 && answer.toLowerCase() !== 'tam') {
+        setResponse(customResponse);
+        setTimeout(() => {
+          resetGame();
+        }, 3000);
+        return;
+      }
       setResponse(customResponse);
     } else if (question.type === 'button' && typeof answer === 'boolean') {
-      setResponse(answer ? question.yesResponse ?? '' : question.noResponse ?? '');
+      setResponse(answer ? (question.yesResponse ?? '') : (question.noResponse ?? ''));
     } else {
       setResponse(null);
     }
@@ -49,7 +76,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
     setTimeout(() => {
       setResponse(null);
       onAnswer(answer);
-      setInputValue(''); 
+      setInputValue('');
     }, 3000);
   };
 
@@ -58,7 +85,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
       className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6"
       style={{
         imageRendering: 'pixelated',
-        width: '400px',
+        width: '500px',
         background:
           'linear-gradient(45deg, #2a2a2a 25%, #3a3a3a 25%, #3a3a3a 50%, #2a2a2a 50%, #2a2a2a 75%, #3a3a3a 75%, #3a3a3a 100%)',
         backgroundSize: '8px 8px',
@@ -75,7 +102,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
             <h2 className="text-2xl font-pixel mb-6 text-white text-center px-4">
               {question.question}
             </h2>
-            {question.type === 'button' ? (
+            {question.type === 'button' &&
+            (currentQuestion === questions.length - 1 ||
+              currentQuestion === questions.length - 4) ? (
               <div className="space-x-4 text-center">
                 <button
                   onClick={() => handleAnswer(true)}
@@ -85,7 +114,30 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
                     boxShadow: '3px 3px 0 #2a2a2a'
                   }}
                 >
-                  Yes
+                  yes
+                </button>
+                <button
+                  onClick={() => handleAnswer(true)}
+                  className="px-6 py-2 bg-pink-500 text-white font-pixel rounded hover:bg-pink-600 transition-colors"
+                  style={{
+                    border: '3px solid #2a2a2a',
+                    boxShadow: '3px 3px 0 #2a2a2a'
+                  }}
+                >
+                  YES
+                </button>
+              </div>
+            ) : question.type === 'button' ? (
+              <div className="space-x-4 text-center">
+                <button
+                  onClick={() => handleAnswer(true)}
+                  className="px-6 py-2 bg-pink-500 text-white font-pixel rounded hover:bg-pink-600 transition-colors"
+                  style={{
+                    border: '3px solid #2a2a2a',
+                    boxShadow: '3px 3px 0 #2a2a2a'
+                  }}
+                >
+                  yes
                 </button>
                 <button
                   onClick={() => handleAnswer(false)}
@@ -95,7 +147,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
                     boxShadow: '3px 3px 0 #2a2a2a'
                   }}
                 >
-                  No
+                  no
                 </button>
               </div>
             ) : (
@@ -105,7 +157,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   className="px-4 py-2 w-full bg-gray-800 text-white font-pixel rounded border-2 border-pink-500"
-                  placeholder="Type your answer here..."
+                  placeholder="type your answer here..."
                 />
                 <button
                   onClick={() => handleAnswer(inputValue)}
@@ -115,7 +167,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer }
                     boxShadow: '3px 3px 0 #2a2a2a'
                   }}
                 >
-                  Submit
+                  submit
                 </button>
               </div>
             )}

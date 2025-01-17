@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Confetti from 'react-confetti';
 import { useGameState } from '../hooks/useGameState';
 import Player from './Player';
 import Heart from './Heart';
@@ -25,6 +26,26 @@ const mazeLayout = [
   '############## #'
 ];
 
+const gifUrls = ['/assets/g1.gif', '/assets/g2.gif', '/assets/g3.gif', '/assets/g4.gif'];
+
+const generateRandomGifs = (count: number) => {
+  return Array.from({ length: count }).map(() => {
+    const randomGif = gifUrls[Math.floor(Math.random() * gifUrls.length)];
+    const randomX = Math.random() * 100;
+    const randomY = Math.random() * 100;
+    const randomSize = Math.random() * 70 + 50;
+    const randomRotation = Math.random() * 360;
+
+    return {
+      gif: randomGif,
+      x: randomX,
+      y: randomY,
+      size: randomSize,
+      rotation: randomRotation
+    };
+  });
+};
+
 const Maze: React.FC = () => {
   const {
     playerPosition,
@@ -34,10 +55,13 @@ const Maze: React.FC = () => {
     currentQuestion,
     handleAnswer,
     gameCompleted,
-    confetti
+    confetti,
+    resetGame
   } = useGameState(mazeLayout);
 
   const [isMoving, setIsMoving] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [explodingGifs, setExplodingGifs] = useState<any[]>([]);
 
   const distance = calculateDistance(playerPosition, heartPosition);
   const heartOpacity = Math.max(0.2, Math.min(1, 1 - distance / 15));
@@ -78,8 +102,15 @@ const Maze: React.FC = () => {
     };
   }, [movePlayer, showQuestions]);
 
+  useEffect(() => {
+    if (gameCompleted && confetti) {
+      const gifs = generateRandomGifs(800);
+      setExplodingGifs(gifs);
+    }
+  }, [gameCompleted, confetti]);
+
   const handleQuestionAnswer = (answer: string | boolean) => {
-    handleAnswer(answer); // Pass both string and boolean answers to the game state logic
+    handleAnswer(answer);
   };
 
   return (
@@ -107,17 +138,40 @@ const Maze: React.FC = () => {
         <Heart position={heartPosition} opacity={heartOpacity} />
 
         {showQuestions && (
-          <QuestionCard currentQuestion={currentQuestion} onAnswer={handleQuestionAnswer} />
-        )}
-
-        {gameCompleted && confetti && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="animate-float text-4xl text-center mt-4 font-pixel text-white">
-              💝 You're my Valentine! 💝
-            </div>
-          </div>
+          <QuestionCard
+            currentQuestion={currentQuestion}
+            onAnswer={handleQuestionAnswer}
+            resetGame={resetGame}
+          />
         )}
       </div>
+      {gameCompleted && confetti && (
+        <>
+          {/* Confetti */}
+          <Confetti width={window.innerWidth} height={window.innerHeight} style={{ zIndex: 20 }} />
+
+          {/* Exploding GIFs */}
+          {explodingGifs.map((gif, index) => (
+            <img
+              key={index}
+              src={gif.gif}
+              alt="Exploding love"
+              style={{
+                position: 'absolute',
+                left: `${gif.x}vw`,
+                top: `${gif.y}vh`,
+                width: `${gif.size}px`,
+                height: `${gif.size}px`,
+                transform: `rotate(${gif.rotation}deg)`,
+                zIndex: 10,
+                pointerEvents: 'none'
+              }}
+            />
+          ))}
+          {/* Confetti */}
+          <Confetti width={window.innerWidth} height={window.innerHeight} style={{ zIndex: 10 }} />
+        </>
+      )}
     </div>
   );
 };
