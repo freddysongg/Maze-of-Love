@@ -67,6 +67,7 @@ export const useGameState = (mazeLayout: string[]) => {
         return;
       }
 
+      // change # of questions
       if (currentQuestion < 5) {
         setCurrentQuestion((q) => q + 1);
       } else {
