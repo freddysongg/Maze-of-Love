@@ -17,8 +17,8 @@ const questions = [
       "ok it might be you, but enter my birthday to make sure you're not an imposter (using format: MM/DD/YYYY)",
     response: (date: string) =>
       date === '02/18/2004'
-        ? 'IT REALLY IS YOU BABE!! happy 3-month anniversary :)'
-        : "wow you're fake, you might've forgot my birthday but i know it's you, happy 3-month anniversary :)",
+        ? 'IT REALLY IS YOU BABE!! happy 3-month anniversary (soon) :)'
+        : "wow you're fake, you might've forgot my birthday but i know it's you, happy 3-month anniversary (soon) :)",
     type: 'input'
   },
   {
