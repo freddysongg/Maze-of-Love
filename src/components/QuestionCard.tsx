@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface QuestionCardProps {
   currentQuestion: number;
@@ -51,7 +51,46 @@ const questions = [
 const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer, resetGame }) => {
   const [response, setResponse] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState<string>('');
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
+  const [hasHovered, setHasHovered] = useState(false);
+  const noButtonRef = useRef<HTMLButtonElement>(null);
   const question = questions[currentQuestion];
+
+  useEffect(() => {
+    setHasHovered(false);
+    setButtonPosition({ x: 0, y: 0 });
+  }, [currentQuestion]);
+
+  const handleNoButtonHover = () => {
+    if (currentQuestion === questions.length - 1) {
+      const button = noButtonRef.current;
+      if (!button) return;
+
+      // Get accurate button dimensions
+      const rect = button.getBoundingClientRect();
+      const buttonWidth = rect.width;
+      const buttonHeight = rect.height;
+
+      // Calculate 2/3 of viewport dimensions
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const maxAllowedWidth = screenWidth * 0.66;
+      const maxAllowedHeight = screenHeight * 0.66;
+
+      // Calculate safe movement area
+      const minX = 0;
+      const maxX = maxAllowedWidth - buttonWidth;
+      const minY = 0;
+      const maxY = maxAllowedHeight - buttonHeight;
+
+      // Generate new positions within bounds
+      const newX = Math.max(minX, Math.min(maxX, Math.floor(Math.random() * maxX)));
+      const newY = Math.max(minY, Math.min(maxY, Math.floor(Math.random() * maxY)));
+
+      if (!hasHovered) setHasHovered(true);
+      setButtonPosition({ x: newX, y: newY });
+    }
+  };
 
   const handleAnswer = (answer: boolean | string) => {
     if (question.type === 'input' && typeof answer === 'string') {
@@ -102,9 +141,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer, 
             <h2 className="text-2xl font-pixel mb-6 text-white text-center px-4">
               {question.question}
             </h2>
-            {question.type === 'button' &&
-            (currentQuestion === questions.length - 1 ||
-              currentQuestion === questions.length - 4) ? (
+            {question.type === 'button' && currentQuestion === questions.length - 4 ? (
               <div className="space-x-4 text-center">
                 <button
                   onClick={() => handleAnswer(true)}
@@ -141,10 +178,31 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestion, onAnswer, 
                 </button>
                 <button
                   onClick={() => handleAnswer(false)}
+                  onMouseEnter={handleNoButtonHover}
+                  ref={noButtonRef}
                   className="px-6 py-2 bg-gray-500 text-white font-pixel rounded hover:bg-gray-600 transition-colors"
                   style={{
                     border: '3px solid #2a2a2a',
-                    boxShadow: '3px 3px 0 #2a2a2a'
+                    boxShadow: '3px 3px 0 #2a2a2a',
+                    position:
+                      currentQuestion === questions.length - 1 && hasHovered ? 'fixed' : 'static',
+                    left:
+                      currentQuestion === questions.length - 1 && hasHovered
+                        ? `${buttonPosition.x}px`
+                        : 'auto',
+                    top:
+                      currentQuestion === questions.length - 1 && hasHovered
+                        ? `${buttonPosition.y}px`
+                        : 'auto',
+                    transform:
+                      currentQuestion === questions.length - 1 && hasHovered
+                        ? 'none'
+                        : 'translateZ(0)',
+                    transition:
+                      currentQuestion === questions.length - 1 && hasHovered
+                        ? 'left 0.1s, top 0.1s'
+                        : 'none',
+                    zIndex: 1000
                   }}
                 >
                   no
