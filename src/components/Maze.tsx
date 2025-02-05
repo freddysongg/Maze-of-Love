@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Confetti from 'react-confetti';
 import { useGameState } from '../hooks/useGameState';
 import Player from './Player';
@@ -65,6 +65,15 @@ const Maze: React.FC = () => {
 
   const distance = calculateDistance(playerPosition, heartPosition);
   const heartOpacity = Math.max(0.2, Math.min(1, 1 - distance / 15));
+  const timeoutIds = useRef<NodeJS.Timeout[]>([]);
+  const audioElements = useRef<HTMLAudioElement[]>([]);
+  const audioFiles = useRef([
+    '/assets/airhorn.mp3',
+    '/assets/boom.mp3',
+    '/assets/lets-go.mp3',
+    '/assets/sheesh.mp3',
+    '/assets/wow.mp3'
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -106,6 +115,41 @@ const Maze: React.FC = () => {
     if (gameCompleted && confetti) {
       const gifs = generateRandomGifs(800);
       setExplodingGifs(gifs);
+
+      const playChaoticAudio = () => {
+        const randomIndex = Math.floor(Math.random() * audioFiles.current.length);
+        const audio = new Audio(audioFiles.current[randomIndex]);
+
+        // Randomize audio properties
+        audio.addEventListener('ended', () => {
+          audioElements.current = audioElements.current.filter((a) => a !== audio);
+        });
+
+        audioElements.current.push(audio);
+        audio.play().catch((error) => console.error('Audio play failed:', error));
+
+        // Schedule next play with random delay
+        const delay = Math.random() * 300 + 100; // 100-400ms
+        const timeoutId = setTimeout(playChaoticAudio, delay);
+        timeoutIds.current.push(timeoutId);
+      };
+
+      // Start the audio chaos
+      playChaoticAudio();
+
+      // Cleanup function
+      return () => {
+        // Clear all scheduled timeouts
+        timeoutIds.current.forEach(clearTimeout);
+        timeoutIds.current = [];
+
+        // Stop all playing audio
+        audioElements.current.forEach((audio) => {
+          audio.pause();
+          audio.currentTime = 0;
+        });
+        audioElements.current = [];
+      };
     }
   }, [gameCompleted, confetti]);
 
